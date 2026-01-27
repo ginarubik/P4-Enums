@@ -1,6 +1,8 @@
 package hu.progmasters.month;
 
-//Without String Manipulation
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public enum Month {
     JANUARY(1, "January"),
@@ -32,9 +34,66 @@ public enum Month {
         return displayName;
     }
 
+    // ---------- EXCEPTION-THROWING LOGIC ----------
+    public static Month fromIndex(int index) {
+        for (Month month : values()) {
+            if (month.index == index) {
+                return month;
+            }
+        }
+        throw new IllegalArgumentException("Invalid month index: " + index);
+    }
+
+    // ---------- DEMO ----------
     public static void main(String[] args) {
         for (Month month : Month.values()) {
             System.out.println(month.getIndex() + ". " + month.getDisplayName());
         }
+    }
+}
+
+/* ===================== UNIT TESTS ===================== */
+
+class MonthTest {
+
+    @Test
+    void fromIndexReturnsCorrectMonth() {
+        assertEquals(Month.JANUARY, Month.fromIndex(1));
+        assertEquals(Month.APRIL, Month.fromIndex(4));
+        assertEquals(Month.DECEMBER, Month.fromIndex(12));
+    }
+
+    @Test
+    void fromIndexThrowsExceptionForZero() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Month.fromIndex(0)
+        );
+    }
+
+    @Test
+    void fromIndexThrowsExceptionForNegativeValue() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Month.fromIndex(-1)
+        );
+    }
+
+    @Test
+    void fromIndexThrowsExceptionForTooLargeValue() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Month.fromIndex(13)
+        );
+    }
+
+    @Test
+    void exceptionMessageContainsInvalidValue() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> Month.fromIndex(99)
+        );
+
+        assertTrue(exception.getMessage().contains("99"));
     }
 }
