@@ -1,5 +1,8 @@
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+/* ===================== MAIN CODE ===================== */
 
 abstract class Citizen {
     private String name;
@@ -175,7 +178,7 @@ class SinCity {
     }
 }
 
-// Unit Tests:
+/* ===================== TESTS ===================== */
 
 public class SinCityTest {
 
@@ -220,5 +223,82 @@ public class SinCityTest {
                 t.someoneMustPay(p)
         );
         assertNull(d.getTaxi());
+    }
+
+    @Test
+    void robbedWithoutGun() {
+        Passenger p = new Passenger("P", 5, 0, false);
+        TaxiDriver d = new TaxiDriver("D", 1, 100);
+        Taxi t = new Taxi(d, false);
+        d.setTaxi(t);
+
+        assertEquals("Passenger robbed the taxi driver", t.someoneMustPay(p));
+    }
+
+    @Test
+    void securitySystemPreventsTheft() {
+        Passenger p = new Passenger("P", 5, 0, true);
+        TaxiDriver d = new TaxiDriver("D", 1, 100);
+        Taxi t = new Taxi(d, true);
+        d.setTaxi(t);
+
+        assertEquals("Passenger robbed the taxi driver", t.someoneMustPay(p));
+        assertNotNull(d.getTaxi());
+    }
+
+    @Test
+    void notEnoughCitizens() {
+        SinCity city = new SinCity();
+        city.addCitizen(new Passenger("P", 3, 100, false));
+
+        assertEquals("Not enough citizen", city.catchATaxi(0, 1));
+    }
+
+    @Test
+    void sameCitizen() {
+        SinCity city = new SinCity();
+        city.addCitizen(new Passenger("P", 3, 100, false));
+        city.addCitizen(new TaxiDriver("D", 3, 0));
+
+        assertEquals("Same citizen", city.catchATaxi(0, 0));
+    }
+
+    @Test
+    void wrongPassengerId() {
+        SinCity city = new SinCity();
+        city.addCitizen(new TaxiDriver("D", 3, 0));
+        city.addCitizen(new Passenger("P", 3, 100, false));
+
+        assertEquals("Wrong passenger ID", city.catchATaxi(0, 1));
+    }
+
+    @Test
+    void wrongTaxiDriverId() {
+        SinCity city = new SinCity();
+        city.addCitizen(new Passenger("P", 3, 100, false));
+        city.addCitizen(new Passenger("P2", 3, 100, false));
+
+        assertEquals("Wrong taxi driver ID", city.catchATaxi(0, 1));
+    }
+
+    @Test
+    void taxiAlreadyStolen() {
+        SinCity city = new SinCity();
+
+        Passenger p = new Passenger("P", 5, 0, true);
+        TaxiDriver d = new TaxiDriver("D", 1, 100);
+
+        city.addCitizen(p);
+        city.addCitizen(d);
+
+        Taxi t = new Taxi(d, false);
+        d.setTaxi(t);
+
+        t.someoneMustPay(p);
+
+        assertEquals(
+                "Oh no! Some evil passenger has already stolen this taxi driver's taxi!",
+                city.catchATaxi(0, 1)
+        );
     }
 }
