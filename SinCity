@@ -1,0 +1,224 @@
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+abstract class Citizen {
+    private String name;
+    private int evilLevel;
+    private int amountOfMoney;
+
+    public Citizen(String name, int evilLevel, int amountOfMoney) {
+        this.name = name;
+        this.evilLevel = (evilLevel < 1 || evilLevel > 5) ? 3 : evilLevel;
+        this.amountOfMoney = amountOfMoney;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getEvilLevel() {
+        return evilLevel;
+    }
+
+    public int getAmountOfMoney() {
+        return amountOfMoney;
+    }
+
+    public void setEvilLevel(int evilLevel) {
+        this.evilLevel = evilLevel;
+    }
+
+    public void setAmountOfMoney(int amountOfMoney) {
+        this.amountOfMoney = amountOfMoney;
+    }
+}
+
+class Passenger extends Citizen {
+    private boolean hasGun;
+
+    public Passenger(String name, int evilLevel, int amountOfMoney, boolean hasGun) {
+        super(name, evilLevel, amountOfMoney);
+        this.hasGun = hasGun;
+    }
+
+    public boolean hasGun() {
+        return hasGun;
+    }
+
+    public void setGun(boolean hasGun) {
+        this.hasGun = hasGun;
+    }
+}
+
+class TaxiDriver extends Citizen {
+    private Taxi taxi;
+
+    public TaxiDriver(String name, int evilLevel, int amountOfMoney) {
+        super(name, evilLevel, amountOfMoney);
+    }
+
+    public Taxi getTaxi() {
+        return taxi;
+    }
+
+    public void setTaxi(Taxi taxi) {
+        this.taxi = taxi;
+    }
+}
+
+class Taxi {
+    private TaxiDriver taxiDriver;
+    private boolean hasSecuritySystem;
+
+    public Taxi(TaxiDriver taxiDriver, boolean hasSecuritySystem) {
+        this.taxiDriver = taxiDriver;
+        this.hasSecuritySystem = hasSecuritySystem;
+    }
+
+    public boolean hasSecuritySystem() {
+        return hasSecuritySystem;
+    }
+
+    public void setSecuritySystem(boolean hasSecuritySystem) {
+        this.hasSecuritySystem = hasSecuritySystem;
+    }
+
+    public void stealTaxiAlso() {
+        if (taxiDriver != null) {
+            taxiDriver.setTaxi(null);
+        }
+        taxiDriver = null;
+    }
+
+    public void payTime(Citizen from, Citizen to, int amount) {
+        if (from.getAmountOfMoney() >= amount) {
+            from.setAmountOfMoney(from.getAmountOfMoney() - amount);
+            to.setAmountOfMoney(to.getAmountOfMoney() + amount);
+        } else {
+            to.setAmountOfMoney(to.getAmountOfMoney() + from.getAmountOfMoney());
+            from.setAmountOfMoney(0);
+        }
+    }
+
+    public String someoneMustPay(Passenger passenger) {
+        TaxiDriver driver = taxiDriver;
+
+        if (passenger.getEvilLevel() == driver.getEvilLevel()) {
+            payTime(passenger, driver, 100);
+            return "Passenger pays normal price";
+        }
+
+        if (driver.getEvilLevel() > passenger.getEvilLevel()) {
+            int price = 100 * (driver.getEvilLevel() - passenger.getEvilLevel() + 1);
+            payTime(passenger, driver, price);
+            return "Passenger pays higher price, because the taxi driver is more evil";
+        }
+
+        payTime(driver, passenger, driver.getAmountOfMoney());
+
+        if (passenger.hasGun() && !hasSecuritySystem) {
+            stealTaxiAlso();
+            return "Passenger robbed the taxi driver, and also stole his taxi";
+        }
+
+        return "Passenger robbed the taxi driver";
+    }
+}
+
+class SinCity {
+    private Taxi[] taxis = new Taxi[0];
+    private Citizen[] citizens = new Citizen[0];
+
+    public Taxi[] getTaxis() {
+        return taxis;
+    }
+
+    public Citizen[] getCitizens() {
+        return citizens;
+    }
+
+    public void addCitizen(Citizen citizen) {
+        Citizen[] tmp = new Citizen[citizens.length + 1];
+        for (int i = 0; i < citizens.length; i++) tmp[i] = citizens[i];
+        tmp[citizens.length] = citizen;
+        citizens = tmp;
+    }
+
+    public void createTaxi(TaxiDriver taxiDriver, boolean hasSecuritySystem) {
+        Taxi taxi = new Taxi(taxiDriver, hasSecuritySystem);
+        taxiDriver.setTaxi(taxi);
+
+        Taxi[] tmp = new Taxi[taxis.length + 1];
+        for (int i = 0; i < taxis.length; i++) tmp[i] = taxis[i];
+        tmp[taxis.length] = taxi;
+        taxis = tmp;
+    }
+
+    public String catchATaxi(int passengerID, int taxiDriverID) {
+        if (citizens.length < 2) return "Not enough citizen";
+        if (passengerID == taxiDriverID) return "Same citizen";
+
+        if (passengerID < 0 || passengerID >= citizens.length ||
+                citizens[passengerID] instanceof TaxiDriver)
+            return "Wrong passenger ID";
+
+        if (taxiDriverID < 0 || taxiDriverID >= citizens.length ||
+                citizens[taxiDriverID] instanceof Passenger)
+            return "Wrong taxi driver ID";
+
+        TaxiDriver driver = (TaxiDriver) citizens[taxiDriverID];
+
+        if (driver.getTaxi() == null)
+            return "Oh no! Some evil passenger has already stolen this taxi driver's taxi!";
+
+        return driver.getTaxi().someoneMustPay((Passenger) citizens[passengerID]);
+    }
+}
+
+// Unit Tests:
+
+public class SinCityTest {
+
+    @Test
+    void defaultEvilLevel() {
+        Passenger p = new Passenger("X", 9, 0, false);
+        assertEquals(3, p.getEvilLevel());
+    }
+
+    @Test
+    void normalPrice() {
+        Passenger p = new Passenger("P", 3, 200, false);
+        TaxiDriver d = new TaxiDriver("D", 3, 0);
+        Taxi t = new Taxi(d, false);
+        d.setTaxi(t);
+
+        assertEquals("Passenger pays normal price", t.someoneMustPay(p));
+    }
+
+    @Test
+    void higherPrice() {
+        Passenger p = new Passenger("P", 1, 500, false);
+        TaxiDriver d = new TaxiDriver("D", 4, 0);
+        Taxi t = new Taxi(d, false);
+        d.setTaxi(t);
+
+        assertEquals(
+                "Passenger pays higher price, because the taxi driver is more evil",
+                t.someoneMustPay(p)
+        );
+    }
+
+    @Test
+    void stealTaxi() {
+        Passenger p = new Passenger("P", 5, 0, true);
+        TaxiDriver d = new TaxiDriver("D", 1, 100);
+        Taxi t = new Taxi(d, false);
+        d.setTaxi(t);
+
+        assertEquals(
+                "Passenger robbed the taxi driver, and also stole his taxi",
+                t.someoneMustPay(p)
+        );
+        assertNull(d.getTaxi());
+    }
+}
