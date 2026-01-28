@@ -34,7 +34,7 @@ public enum Month {
         return displayName;
     }
 
-    // ---------- EXCEPTION-THROWING LOGIC ----------
+    // Test for Exceptions:
     public static Month fromIndex(int index) {
         for (Month month : values()) {
             if (month.index == index) {
@@ -44,7 +44,7 @@ public enum Month {
         throw new IllegalArgumentException("Invalid month index: " + index);
     }
 
-    // ---------- DEMO ----------
+    // Print Statement:
     public static void main(String[] args) {
         for (Month month : Month.values()) {
             System.out.println(month.getIndex() + ". " + month.getDisplayName());
@@ -52,7 +52,7 @@ public enum Month {
     }
 }
 
-/* ===================== UNIT TESTS ===================== */
+// Unit Tests:
 
 class MonthTest {
 
