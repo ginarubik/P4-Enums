@@ -36,19 +36,15 @@ public class Main {
     }
 }
 
-/* ===================== ENUM ===================== */
 
 enum Topping {
     TOMATO, BACON, ONION, PARMESAN, BASIL, CHEESE, HAM, MUSHROOM
 }
 
-/* ===================== ABSTRACT CLASS ===================== */
-
 abstract class Pizza {
 
     private String name;
 
-    // final: reference never changes
     private final Set<Topping> toppingSet = EnumSet.noneOf(Topping.class);
 
     public final void addTopping(Topping topping) {
@@ -79,7 +75,6 @@ abstract class Pizza {
     }
 }
 
-/* ===================== PREDEFINED PIZZA ===================== */
 
 final class Capricciosa extends Pizza {
 
@@ -91,7 +86,6 @@ final class Capricciosa extends Pizza {
     }
 }
 
-/* ===================== CUSTOM PIZZA ===================== */
 
 final class CustomPizza extends Pizza {
 
@@ -101,7 +95,7 @@ final class CustomPizza extends Pizza {
     }
 }
 
-/* ===================== UNIT TESTS ===================== */
+// Unit Tests:
 
 class PizzaTest {
 
